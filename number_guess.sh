@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-echo -e "Enter your username:"
+printf "Enter your username:"
 read username
 
 if [[ ! "$username" =~ ^[a-zA-Z0-9]{1,22}$ ]]; then
@@ -15,9 +15,9 @@ user_exists=$($PSQL "SELECT username FROM players WHERE username = '$username';"
 if [[ -n "$user_exists" ]]; then
     games_played=$($PSQL "SELECT playtimes FROM players WHERE username = '$username';")
     best_game=$($PSQL "SELECT bestscore FROM players WHERE username = '$username';")
-    echo -e "Welcome back, $username! You have played $games_played games, and your best game took $best_game guesses."
+    printf "Welcome back, $username! You have played $games_played games, and your best game took $best_game guesses.\n"
 else
-    echo -e "Welcome, $username! It looks like this is your first time here."
+    printf "Welcome, $username! It looks like this is your first time here.\n"
     $PSQL "INSERT INTO players (username, playtimes, bestscore) VALUES ('$username', 0, 0);" 1> /dev/null 2> /dev/null
 fi
 games_played=$(( games_played + 1 ))
