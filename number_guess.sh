@@ -1,10 +1,10 @@
 #!/bin/bash
 
 
-printf "Enter your username:"
+echo "Enter your username:"
 read username
 
-if [[ ! "$username" =~ ^[a-zA-Z0-9]{1,22}$ ]]; then
+if [[ ! "$username" =~ ^[a-zA-Z0-9_]{1,23}$ ]]; then
     echo "Not a good username"
     exit
 fi
@@ -15,10 +15,10 @@ user_exists=$($PSQL "SELECT username FROM players WHERE username = '$username';"
 if [[ -n "$user_exists" ]]; then
     games_played=$($PSQL "SELECT playtimes FROM players WHERE username = '$username';")
     best_game=$($PSQL "SELECT bestscore FROM players WHERE username = '$username';")
-    printf "Welcome back, $username! You have played $games_played games, and your best game took $best_game guesses.\n"
+    echo "Welcome back, $username! You have played $games_played games, and your best game took $best_game guesses."
 else
-    printf "Welcome, $username! It looks like this is your first time here.\n"
-    $PSQL "INSERT INTO players (username, playtimes, bestscore) VALUES ('$username', 0, 0);" 1> /dev/null 2> /dev/null
+    echo "Welcome, $username! It looks like this is your first time here."
+    insert=$($PSQL "INSERT INTO players (username, playtimes, bestscore) VALUES ('$username', 0, 0);")
 fi
 games_played=$(( games_played + 1 ))
 $PSQL "UPDATE players SET playtimes=$games_played where username='$username'" 1> /dev/null
