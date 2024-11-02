@@ -12,16 +12,19 @@ PSQL="psql --username=freecodecamp --dbname=guessgame -t --no-align -c"
 
 user_exists=$($PSQL "SELECT username FROM players WHERE username = '$username';")
 
+NUM=$(( RANDOM % 1000 + 1 ))
+
 if [[ -n "$user_exists" ]]; then
     games_played=$($PSQL "SELECT playtimes FROM players WHERE username = '$username';")
     best_game=$($PSQL "SELECT bestscore FROM players WHERE username = '$username';")
     echo "Welcome back, $username! You have played $games_played games, and your best game took $best_game guesses."
 else
     echo "Welcome, $username! It looks like this is your first time here."
-    insert=$($PSQL "INSERT INTO players (username, playtimes, bestscore) VALUES ('$username', 0, 999);")
+    insert=$($PSQL "INSERT INTO players (username, playtimes, bestscore) VALUES ('$username', 1, 0);")
+    games_played=1
+    best_game=0
 fi
 
-NUM=$(( RANDOM % 1000 + 1 ))
 number_of_guesses=0
 guess=-1
 
@@ -45,7 +48,11 @@ while [[ $guess -ne $NUM ]]; do
     fi
 done
 
-$PSQL "UPDATE players SET playtimes=$games_played, bestscore=$number_of_guesses WHERE username='$username';" 1>/dev/null
-echo "You guessed it in $number_of_guesses tries. The secret number was $NUM. Nice job!"
+if [[ $best_game -eq 0 || $number_of_guesses -lt $best_game ]]; then
+    $PSQL "UPDATE players SET playtimes=$(( games_played )), bestscore=$number_of_guesses WHERE username='$username';" 1>/dev/null
+else
+    $PSQL "UPDATE players SET playtimes=$(( games_played )) WHERE username='$username';" 1>/dev/null
+fi
 
+echo "You guessed it in $number_of_guesses tries. The secret number was $NUM. Nice job!"
 
